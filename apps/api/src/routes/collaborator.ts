@@ -5,12 +5,14 @@ import {
     addCollaborator,
     removeCollaborator,
     updateCollaborator,
+    leaveDocument,
 } from "../controllers/CollaboratorController.js";
 import { requireAuth } from "../middleware/auth.js";
 
 /** Parent `/api/documents/:documentId/collaborators` supplies `documentId` */
 const router: express.Router = express.Router({ mergeParams: true });
 
+router.delete("/leave/me", requireAuth, leaveDocument);
 router.get("/", requireAuth, getCollaborators);
 router.post("/", requireAuth, addCollaborator);
 /** `:id` = Collaborator document `_id` */

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { sendInvite, getMyInvites, acceptInvite, declineInvite } from '../controllers/InviteController.js';
 import { requireAuth } from '../middleware/auth.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(requireAuth);
 

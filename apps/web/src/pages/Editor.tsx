@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Share2, Loader2, AlertCircle, X, Search, UserPlus } from 'lucide-react';
+import { ArrowLeft, Save, Share2, Loader2, AlertCircle, X, Search, UserPlus, LogOut } from 'lucide-react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import Quill from 'quill';
@@ -202,6 +202,19 @@ export default function Editor() {
     }
   };
 
+  const handleLeaveDocument = async () => {
+    if (!id) return;
+    if (!window.confirm("Are you sure you want to leave this document? You will lose access.")) return;
+    
+    try {
+      await api.delete(`/documents/${id}/collaborators/leave/me`);
+      navigate('/');
+    } catch (err: any) {
+      console.error('Failed to leave document', err);
+      alert(err.response?.data?.error || 'Failed to leave document');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -259,6 +272,17 @@ export default function Editor() {
               Yjs
             </div>
           </div>
+
+          {docDetails.ownerId !== user?._id && (
+            <button 
+              onClick={handleLeaveDocument}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-colors ring-1 ring-red-500/20"
+              title="Leave Document"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Leave</span>
+            </button>
+          )}
 
           <button 
             onClick={() => setIsShareModalOpen(true)}

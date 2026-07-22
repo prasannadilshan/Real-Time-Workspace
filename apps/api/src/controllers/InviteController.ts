@@ -6,9 +6,10 @@ import { Document as DocModel } from "../models/Document.js";
 import mongoose from "mongoose";
 
 export const sendInvite = async (req: Request, res: Response) => {
-    const { documentId } = req.params;
-    const { profileId, role } = req.body;
-    const inviterProfileId = req.user?.profileId;
+    const documentId = req.params.documentId as string;
+    const profileId = req.body.profileId as string;
+    const role = req.body.role as string;
+    const inviterProfileId = req.user?.profileId as string;
 
     if (!inviterProfileId) {
         throw new AppError("Unauthorized", 401, "UNAUTHORIZED");
@@ -56,8 +57,8 @@ export const getMyInvites = async (req: Request, res: Response) => {
 };
 
 export const acceptInvite = async (req: Request, res: Response) => {
-    const { inviteId } = req.params;
-    const profileId = req.user?.profileId;
+    const inviteId = req.params.inviteId as string;
+    const profileId = req.user?.profileId as string;
 
     if (!profileId) {
         throw new AppError("Unauthorized", 401, "UNAUTHORIZED");
@@ -82,8 +83,8 @@ export const acceptInvite = async (req: Request, res: Response) => {
 };
 
 export const declineInvite = async (req: Request, res: Response) => {
-    const { inviteId } = req.params;
-    const profileId = req.user?.profileId;
+    const inviteId = req.params.inviteId as string;
+    const profileId = req.user?.profileId as string;
 
     if (!profileId) {
         throw new AppError("Unauthorized", 401, "UNAUTHORIZED");

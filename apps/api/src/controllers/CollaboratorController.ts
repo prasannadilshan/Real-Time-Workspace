@@ -82,3 +82,18 @@ export const removeCollaborator = async (req: Request, res: Response) => {
     }
     return res.status(200).json({message: "Collaborator removed successfully"});
 }
+
+export const leaveDocument = async (req: Request, res: Response) => {
+    const documentId = req.params.documentId as string;
+    const profileId = req.user?.profileId ?? "";
+    
+    // An owner cannot leave their own document (they can only delete it)
+    await assertNotDocumentOwner(profileId, documentId);
+    
+    const collaborator = await Collaborator.findOneAndDelete({ documentId, profileId });
+    if(!collaborator) {
+        console.log("Collaborator not found");
+        throw new AppError("Collaborator not found", 404, "COLLABORATOR_NOT_FOUND");
+    }
+    return res.status(200).json({message: "Successfully left the document"});
+}
