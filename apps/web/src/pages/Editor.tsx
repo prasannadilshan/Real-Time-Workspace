@@ -327,7 +327,7 @@ export default function Editor() {
       </header>
 
       {/* Editor Main Area using Quill */}
-      <main className="flex-1 flex flex-col relative bg-neutral-950 items-center overflow-auto py-8">
+      <main className="flex-1 flex flex-col relative bg-neutral-950 items-center overflow-auto pt-16 pb-8">
         <div className="absolute top-4 right-8 bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-full ring-1 ring-emerald-500/40 flex items-center gap-2 z-10">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-xs font-medium">Live Sync Active</span>
@@ -336,7 +336,7 @@ export default function Editor() {
         {/* Quill container with custom Tailwind styling for dark mode */}
         <div 
           ref={editorContainerRef} 
-          className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden min-h-[600px] quill-dark-theme-override"
+          className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden min-h-[600px] mt-4 quill-dark-theme-override"
         />
       </main>
 
