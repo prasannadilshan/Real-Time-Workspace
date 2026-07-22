@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-neutral-800;
+  }
+  body {
+    @apply bg-neutral-950 text-neutral-50 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom scrollbar for editor */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Quill Editor Overrides */
+.quill-dark-theme-override .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid #e5e5e5 !important;
+  background-color: #f9fafb;
+}
+.quill-dark-theme-override .ql-container {
+  border: none !important;
+  font-family: inherit;
+  font-size: 1.125rem;
+}
+.quill-dark-theme-override .ql-editor {
+  min-height: 600px;
+  color: #171717; /* Dark text for paper-like background */
+}
