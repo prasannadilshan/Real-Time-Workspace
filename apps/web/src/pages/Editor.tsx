@@ -131,6 +131,20 @@ export default function Editor() {
 
     const binding = new QuillBinding(ytext, quillRef.current, provider.awareness);
 
+    let isInitialized = false;
+    provider.on('sync', (isSynced: boolean) => {
+      if (isSynced && !isInitialized) {
+        isInitialized = true;
+        // If the Yjs document is empty, populate it with the saved database content
+        if (ytext.length === 0 && docDetails?.content) {
+          const delta = quillRef.current?.clipboard.convert({ html: docDetails.content });
+          if (delta) {
+            quillRef.current?.setContents(delta, 'user');
+          }
+        }
+      }
+    });
+
     // Set local awareness for cursors
     if (user && user.username) {
       // Generate a deterministic but pseudo-random color based on user's username
@@ -199,6 +213,15 @@ export default function Editor() {
     } catch (err: any) {
       console.error('Failed to send invite', err);
       alert(err.response?.data?.error || 'Failed to send invite');
+    }
+  };
+
+  const handleRemoveCollaborator = async (collaboratorId: string) => {
+    try {
+      await api.delete(`/documents/${id}/collaborators/${collaboratorId}`);
+      setCollaborators(prev => prev.filter(c => c._id !== collaboratorId));
+    } catch (err) {
+      console.error('Failed to remove collaborator', err);
     }
   };
 
@@ -388,9 +411,20 @@ export default function Editor() {
                         </div>
                         <div className="text-sm font-medium text-neutral-200">{c.name}</div>
                       </div>
-                      <span className="text-xs px-2 py-1 bg-neutral-900 text-neutral-400 rounded-md capitalize">
-                        {c.permissions.includes('write') ? 'Editor' : 'Viewer'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 bg-neutral-900 text-neutral-400 rounded-md capitalize">
+                          {c.permissions.includes('write') ? 'Editor' : 'Viewer'}
+                        </span>
+                        {docDetails?.ownerId === user?._id && (
+                          <button
+                            onClick={() => handleRemoveCollaborator(c._id)}
+                            className="p-1 text-red-400/70 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                            title="Remove collaborator"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

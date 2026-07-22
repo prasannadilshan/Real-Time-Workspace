@@ -63,7 +63,7 @@ export const updateCollaborator = async (req: Request, res: Response) => {
         throw new AppError("Invalid request body", 400, "INVALID_REQUEST_BODY");
     }
     const {role} = parsed.data;
-    const collaborator = await Collaborator.findOneAndUpdate({_id: id, documentId}, {role}, {new: true});
+    const collaborator = await Collaborator.findOneAndUpdate({_id: id, documentId}, {role}, {returnDocument: "after"});
     if(!collaborator) {
         console.log("Collaborator not found");
         throw new AppError("Collaborator not found", 404, "COLLABORATOR_NOT_FOUND");

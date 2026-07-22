@@ -64,7 +64,7 @@ export const updateDocument = async (req: Request, res: Response) => {
         throw new AppError("Invalid request body", 400, "INVALID_REQUEST_BODY");
     }
     const { title, content } = parsed.data;
-    const document = await Document.findByIdAndUpdate(id, { title, content }, { new: true });
+    const document = await Document.findByIdAndUpdate(id, { title, content }, { returnDocument: "after" });
     if(!document) {
         throw new AppError("Document not found", 404, "DOCUMENT_NOT_FOUND");
     }
