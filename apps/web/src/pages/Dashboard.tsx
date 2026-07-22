@@ -269,38 +269,10 @@ export default function Dashboard() {
                 onClick={() => navigate(`/document/${doc._id}`)}
                 className="group bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5 hover:bg-neutral-800/60 hover:border-neutral-700 transition-all cursor-pointer flex flex-col h-48 relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                  {isOwner && (
-                    <>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRenameTitle(doc.title);
-                          setRenamingDocId(doc._id);
-                        }}
-                        className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs p-1.5 rounded-md ring-1 ring-neutral-700 font-medium transition-colors"
-                        title="Rename document"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => handleDeleteDocument(e, doc._id)}
-                        className="bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs p-1.5 rounded-md ring-1 ring-red-500/20 font-medium transition-colors"
-                        title="Delete document"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                  <div className="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 flex items-center rounded-md ring-1 ring-emerald-500/20 font-medium">
-                    Open
-                  </div>
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-3">
+                <div className="flex justify-between items-start gap-4 flex-1">
+                  <div className="flex items-start gap-3 min-w-0">
                     <div className={cn(
-                      "p-2 rounded-lg ring-1 mt-1",
+                      "p-2 rounded-lg ring-1 mt-1 shrink-0",
                       isOwner ? "bg-blue-500/10 ring-blue-500/20 text-blue-400" : "bg-purple-500/10 ring-purple-500/20 text-purple-400"
                     )}>
                       {isOwner ? <FileText className="w-4 h-4" /> : <Users className="w-4 h-4" />}
@@ -310,7 +282,7 @@ export default function Dashboard() {
                       <form 
                         onSubmit={(e) => handleRenameSubmit(e, doc._id)} 
                         onClick={(e) => e.stopPropagation()}
-                        className="flex-1 pr-8"
+                        className="flex-1 min-w-0"
                       >
                         <input
                           autoFocus
@@ -322,10 +294,38 @@ export default function Dashboard() {
                         />
                       </form>
                     ) : (
-                      <h3 className="text-lg font-medium text-neutral-200 line-clamp-2 pr-8 group-hover:text-emerald-400 transition-colors">
+                      <h3 className="text-lg font-medium text-neutral-200 line-clamp-2 group-hover:text-emerald-400 transition-colors break-words">
                         {doc.title}
                       </h3>
                     )}
+                  </div>
+
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 shrink-0">
+                    {isOwner && (
+                      <>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRenameTitle(doc.title);
+                            setRenamingDocId(doc._id);
+                          }}
+                          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs p-1.5 rounded-md ring-1 ring-neutral-700 font-medium transition-colors"
+                          title="Rename document"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={(e) => handleDeleteDocument(e, doc._id)}
+                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs p-1.5 rounded-md ring-1 ring-red-500/20 font-medium transition-colors"
+                          title="Delete document"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                    <div className="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 flex items-center rounded-md ring-1 ring-emerald-500/20 font-medium h-7">
+                      Open
+                    </div>
                   </div>
                 </div>
                 
