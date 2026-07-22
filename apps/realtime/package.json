@@ -19,7 +19,7 @@
     "dotenv": "^17.3.1",
     "shared": "workspace:*",
     "ws": "^8.19.0",
-    "y-websocket": "^3.0.0",
+    "y-websocket": "^2.1.0",
     "yjs": "^13.6.30"
   },
   "devDependencies": {

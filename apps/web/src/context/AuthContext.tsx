@@ -3,6 +3,7 @@ import api, { setAuthToken } from '../lib/api';
 
 interface Profile {
   id: string;
+  _id: string;
   username: string;
   firstName?: string;
   lastName?: string;

@@ -5,6 +5,8 @@ import { connectDB, disconnectDB } from "./config/db.js";
 import authRouter from "./routes/auth.js";
 import documentRouter from "./routes/documents.js";
 import collaboratorRouter from "./routes/collaborator.js";
+import profileRouter from "./routes/profiles.js";
+import inviteRouter from "./routes/invites.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -20,6 +22,8 @@ app.get("/health", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/documents", documentRouter);
 app.use("/api/documents/:documentId/collaborators", collaboratorRouter);
+app.use("/api/profiles", profileRouter);
+app.use("/api/invites", inviteRouter);
 app.use(errorHandler);
 
 connectDB().then(() => {

@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
 // @ts-ignore
-import { setupWSConnection } from "y-websocket/bin/utils.js";
+import { setupWSConnection } from "y-websocket/bin/utils";
 import { verifyAccessToken } from "./utils/auth.js";
 import { canReadDocument } from "./services/documentAccess.js";
 import env from "./config/env.js";

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Share2, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Share2, Loader2, AlertCircle, X, Search, UserPlus } from 'lucide-react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import Quill from 'quill';
@@ -22,6 +22,19 @@ interface DocumentDetails {
   updatedAt: string;
 }
 
+interface Collaborator {
+  _id: string;
+  name: string;
+  permissions: string[];
+}
+
+interface ProfileSearchResult {
+  _id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
 export default function Editor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -33,6 +46,13 @@ export default function Editor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // Share Modal State
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<ProfileSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
@@ -52,8 +72,20 @@ export default function Editor() {
         setLoading(false);
       }
     };
+
+    const fetchCollaborators = async () => {
+      try {
+        const res = await api.get(`/documents/${id}/collaborators`);
+        setCollaborators(res.data.collaborators || []);
+      } catch (err) {
+        console.error('Failed to load collaborators', err);
+      }
+    };
     
-    if (id) fetchDoc();
+    if (id) {
+      fetchDoc();
+      fetchCollaborators();
+    }
   }, [id]);
 
   // Initialize Yjs and Quill
@@ -124,18 +156,49 @@ export default function Editor() {
     };
   }, [id, loading, error, user]);
 
-  const handleSaveTitle = async () => {
+  const handleSaveDocument = async () => {
     if (!id || saving) return;
     setSaving(true);
     try {
-      // Content is synced via Yjs, so we only need to update the title RESTfully here.
-      // But we can also pass the plain text content or just leave it empty.
-      const plainText = quillRef.current?.getText() || '';
-      await api.put(`/documents/${id}`, { title, content: plainText });
+      const htmlContent = quillRef.current?.root.innerHTML || '';
+      await api.put(`/documents/${id}`, { title, content: htmlContent });
     } catch (err) {
-      console.error('Failed to save title', err);
+      console.error('Failed to save document', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSearchProfiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = e.target.value;
+    setSearchQuery(q);
+    if (!q.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const res = await api.get(`/profiles/search?q=${encodeURIComponent(q)}`);
+      setSearchResults(res.data.profiles || []);
+    } catch (err) {
+      console.error('Search failed', err);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleAddCollaborator = async (profileId: string) => {
+    try {
+      await api.post(`/invites/documents/${id}`, { profileId, role: 'editor' });
+      
+      // We don't refresh collaborators immediately because they have to accept first
+      // But we can clear the search and maybe show a quick toast or alert.
+      setSearchQuery('');
+      setSearchResults([]);
+      alert("Invite sent successfully!");
+    } catch (err: any) {
+      console.error('Failed to send invite', err);
+      alert(err.response?.data?.error || 'Failed to send invite');
     }
   };
 
@@ -181,7 +244,7 @@ export default function Editor() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            onBlur={handleSaveTitle}
+            onBlur={handleSaveDocument}
             className="bg-transparent border-none outline-none text-white font-medium text-lg focus:ring-1 focus:ring-neutral-700 rounded px-2 py-0.5 w-full max-w-md truncate"
             placeholder="Document Title"
           />
@@ -197,13 +260,16 @@ export default function Editor() {
             </div>
           </div>
 
-          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-lg text-sm font-medium transition-colors">
+          <button 
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-lg text-sm font-medium transition-colors"
+          >
             <Share2 className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>
           </button>
           
           <button 
-            onClick={handleSaveTitle}
+            onClick={handleSaveDocument}
             disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
           >
@@ -226,6 +292,90 @@ export default function Editor() {
           className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden min-h-[600px] quill-dark-theme-override"
         />
       </main>
+
+      {/* Share Modal */}
+      {isShareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-md p-6 shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Share Document</h2>
+              <button 
+                onClick={() => setIsShareModalOpen(false)}
+                className="text-neutral-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-neutral-500" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search users to add..."
+                value={searchQuery}
+                onChange={handleSearchProfiles}
+                className="w-full bg-neutral-950 border border-neutral-800 text-white rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-sm"
+              />
+              {searching && (
+                <div className="absolute right-3 top-2.5">
+                  <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
+                </div>
+              )}
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="mb-6 bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden">
+                <div className="px-4 py-2 bg-neutral-900/50 border-b border-neutral-800 text-xs font-semibold text-neutral-400 uppercase">
+                  Search Results
+                </div>
+                <div className="max-h-40 overflow-y-auto">
+                  {searchResults.map(p => (
+                    <div key={p._id} className="flex items-center justify-between p-3 border-b border-neutral-800/50 last:border-0 hover:bg-neutral-900 transition-colors">
+                      <div>
+                        <div className="text-sm font-medium text-neutral-200">@{p.username}</div>
+                        <div className="text-xs text-neutral-500">{p.firstName} {p.lastName}</div>
+                      </div>
+                      <button 
+                        onClick={() => handleAddCollaborator(p._id)}
+                        className="p-1.5 text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
+                        title="Add as Editor"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto">
+              <h3 className="text-sm font-semibold text-neutral-400 mb-3 uppercase">Collaborators</h3>
+              {collaborators.length === 0 ? (
+                <p className="text-sm text-neutral-500 italic">No collaborators yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {collaborators.map(c => (
+                    <div key={c._id} className="flex items-center justify-between p-3 bg-neutral-950 rounded-xl border border-neutral-800/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold ring-1 ring-purple-500/30">
+                          {c.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="text-sm font-medium text-neutral-200">{c.name}</div>
+                      </div>
+                      <span className="text-xs px-2 py-1 bg-neutral-900 text-neutral-400 rounded-md capitalize">
+                        {c.permissions.includes('write') ? 'Editor' : 'Viewer'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+          </div>
+        </div>
+      )}
     </div>
   );
 }
