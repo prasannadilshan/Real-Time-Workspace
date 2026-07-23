@@ -1,9 +1,9 @@
 ---
-name: Realtime Editor Execution Plan
+name: Real-Time-Workspace Execution Plan
 overview: Execution-ready plan for your MERN collaborative editor setup, with the immediate next implementation step clearly marked.
 ---
 
-# Realtime Editor Execution Plan
+# Real-Time-Workspace Execution Plan
 
 ## Current Status
 
